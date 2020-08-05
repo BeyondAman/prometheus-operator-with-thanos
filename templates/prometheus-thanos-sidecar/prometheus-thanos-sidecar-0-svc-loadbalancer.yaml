@@ -1,0 +1,27 @@
+{{- if .Values.thanosSidecar.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: thanos-sidecar-0-svc
+  labels:
+    app: {{ template "prometheus-operator.name" . }}-prometheus
+{{- if .Values.thanosSidecar.service.annotations }}
+  annotations:
+{{ toYaml .Values.thanosSidecar.service.annotations | indent 4 }}
+{{- end }}  
+spec:
+{{- if .Values.thanosSidecar.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+  {{- range $cidr := .Values.thanosSidecar.service.loadBalancerSourceRanges }}
+    - {{ $cidr }}
+{{- end }}
+  type: "{{ .Values.thanosSidecar.service.type }}"
+  ports:
+  - name: grpc
+    port: 10901
+    protocol: TCP
+    targetPort: grpc
+  selector:
+    statefulset.kubernetes.io/pod-name: prometheus-{{ template "prometheus-operator.fullname" . }}-prometheus-0
+{{- end -}}
+{{- end -}}

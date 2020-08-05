@@ -1,0 +1,18 @@
+{{- if not .Values.thanosSidecar.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: prometheus
+  name: thanos-sidecar-0
+  namespace: {{ $.Release.Namespace }}
+spec:
+  ports:
+    - port: 10901
+      protocol: TCP
+      targetPort: grpc
+      name: grpc
+  selector:
+    statefulset.kubernetes.io/pod-name: prometheus-{{ template "prometheus-operator.fullname" . }}-prometheus-0
+  type: ClusterIP
+{{- end }}
